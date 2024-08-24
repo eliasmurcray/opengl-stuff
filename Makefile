@@ -1,4 +1,4 @@
-CFLAGS = -std=c89 -Ofast -Wall -Wextra -Iinclude/
+CFLAGS = -std=c89 -Ofast -Wall -Wextra -Iinclude/ -Ivendors/
 LIBS = `pkg-config glfw3 glew --cflags --libs` -framework OpenGL
 OUT = build
 
