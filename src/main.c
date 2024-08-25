@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "texture.h"
 #include "shader_helpers.h"
+#include "noise.h"
 
 int main() {
   if (!glfwInit()) return 1;
@@ -69,12 +70,6 @@ int main() {
     return 1;
   }
   glUseProgram(program);
-  
-  int uColor = glGetUniformLocation(program, "u_Color");
-  if (uColor == -1) {
-      fprintf(stderr, "Failed to find uniform \"u_Color\"\n");
-      return 1;
-  }
 
   struct Texture *texture = texture_create("textures/blocks.png");
   if (!texture) {
@@ -91,16 +86,9 @@ int main() {
   }
   glUniform1i(uTexture, 0);
   
-  float r = 0.0f;
-  float increment = 0.01f;
   glClearColor(1.0, 1.0, 1.0, 1.0);
   while (!glfwWindowShouldClose(window)) {
-    r += increment;
-    if (r >= 1.0f || r <= 0.0f) {
-        increment = -increment;
-    }
     glClear(GL_COLOR_BUFFER_BIT);
-    glUniform4f(uColor, r, 0.3f, 0.4f, 1.0f);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
     glfwSwapBuffers(window);
     glfwPollEvents();
