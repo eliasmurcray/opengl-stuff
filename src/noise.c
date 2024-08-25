@@ -47,17 +47,15 @@ static double grad(int hash, double x, double y, double z) {
   return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 }
 
-static int floori(double x) { return (int)x - (x <= 0); }
-
-static double floord(double x) { return (double)((int)x - (x <= 0)); }
+static int floor(double x) { return (int)x - (x <= 0); }
 
 double noise(double x, double y, double z) {
-  int X = floori(x) & 255;
-  int Y = floori(y) & 255;
-  int Z = floori(z) & 255;
-  x -= floord(x);
-  y -= floord(y);
-  z -= floord(z);
+  int X = floor(x) & 255;
+  int Y = floor(y) & 255;
+  int Z = floor(z) & 255;
+  x -= floor(x);
+  y -= floor(y);
+  z -= floor(z);
   double u = fade(x), v = fade(y), w = fade(z);
   int A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z, B = p[X + 1] + Y,
       BA = p[B] + Z, BB = p[B + 1] + Z;
