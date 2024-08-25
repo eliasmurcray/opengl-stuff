@@ -1,10 +1,9 @@
 #ifndef SHADER_HELPERS_H
 #define SHADER_HELPERS_H
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <GL/glew.h>
 
 char* load_file_as_string(const char* filename);
 

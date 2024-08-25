@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
-/*#include <stdlib.h>*/
+#include "texture.h"
 #include "shader_helpers.h"
 
 int main() {
@@ -25,10 +25,10 @@ int main() {
   printf("Version: %s\n", glGetString(GL_VERSION));
 
   float positions[] = {
-    -0.5f, -0.5f,
-    0.5f, 0.5f,
-    0.5f, -0.5f,
-    -0.5f, 0.5f,
+    -0.5f, -0.5f, 0.0f, 0.0f,
+    0.5f, 0.5f, 1.0f, 1.0f,
+    0.5f, -0.5f, 1.0f, 0.0f,
+    -0.5f, 0.5f, 0.0f, 1.0f
   };
 
   unsigned int indices[] = {
@@ -43,9 +43,13 @@ int main() {
   unsigned int buffer;
   glGenBuffers(1, &buffer);
   glBindBuffer(GL_ARRAY_BUFFER, buffer);
-  glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), positions, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, 4 * 4 * sizeof(float), positions, GL_STATIC_DRAW);
+  /* Positions */
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+  /* UV */
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
 
   unsigned int ibo;
   glGenBuffers(1, &ibo);
@@ -68,6 +72,21 @@ int main() {
       fprintf(stderr, "Failed to find uniform \"u_Color\"\n");
       return 1;
   }
+
+  struct Texture *texture = texture_create("textures/blocks.png");
+  if (!texture) {
+      glfwTerminate();
+      return 1;
+  }
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture->id);
+
+  int uTexture = glGetUniformLocation(program, "u_Texture");
+  if (uTexture == -1) {
+      fprintf(stderr, "Failed to find uniform \"u_Texture\"\n");
+      return 1;
+  }
+  glUniform1i(uTexture, 0);
   
   float r = 0.0f;
   float increment = 0.01f;
@@ -83,5 +102,6 @@ int main() {
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
+  texture_destroy(texture);
   glfwTerminate();
 }
