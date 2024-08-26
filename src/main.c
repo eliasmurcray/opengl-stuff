@@ -1,9 +1,11 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
-#include "texture.h"
 #include "shader_helpers.h"
 #include "noise.h"
+
+#define WIDTH 640
+#define HEIGHT 480
 
 int main() {
   if (!glfwInit()) return 1;
@@ -11,7 +13,7 @@ int main() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  GLFWwindow* window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Noise", NULL, NULL);
   if (!window) {
     glfwTerminate();
     return 1;
@@ -26,10 +28,10 @@ int main() {
   printf("Version: %s\n", glGetString(GL_VERSION));
 
   float positions[] = {
-    -0.5f, -0.5f, 0.0f, 0.0f,
-    0.5f, 0.5f, 1.0f, 1.0f,
-    0.5f, -0.5f, 1.0f, 0.0f,
-    -0.5f, 0.5f, 0.0f, 1.0f
+    -1, -1, 0, 0,
+    1, 1, 1, 1,
+    1, -1, 1, 0,
+    -1, 1, 0, 1
   };
 
   unsigned int indices[] = {
@@ -70,21 +72,36 @@ int main() {
     return 1;
   }
   glUseProgram(program);
-
-  struct Texture *texture = texture_create("textures/blocks.png");
-  if (!texture) {
-      glfwTerminate();
-      return 1;
+  
+  float heightmap[WIDTH * HEIGHT];
+  size_t i = 0;
+  for (; i < HEIGHT; i++) {
+    size_t j = 0;
+    for (; j < WIDTH; j++) {
+      double n = noise(j * 0.01, i * 0.01, 0);
+      heightmap[i * WIDTH + j] = (n + 1.0f) / 2.0f;
+    }
   }
+
+  unsigned int heightmapTexture;
+  glGenTextures(1, &heightmapTexture);
+  glBindTexture(GL_TEXTURE_2D, heightmapTexture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, WIDTH, HEIGHT, 0, GL_RED, GL_FLOAT, heightmap);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  int uHeightmap = glGetUniformLocation(program, "uHeightmap");
+  if (uHeightmap == -1) {
+    fprintf(stderr, "Failed to find uniform \"uHeightmap\"\n");
+    return 1;
+  }
+  glUniform1i(uHeightmap, 0);
+
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, texture->id);
-
-  int uTexture = glGetUniformLocation(program, "u_Texture");
-  if (uTexture == -1) {
-      fprintf(stderr, "Failed to find uniform \"u_Texture\"\n");
-      return 1;
-  }
-  glUniform1i(uTexture, 0);
+  glBindTexture(GL_TEXTURE_2D, heightmapTexture);
   
   glClearColor(1.0, 1.0, 1.0, 1.0);
   while (!glfwWindowShouldClose(window)) {
@@ -93,6 +110,5 @@ int main() {
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
-  texture_destroy(texture);
   glfwTerminate();
 }

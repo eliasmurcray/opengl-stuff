@@ -1,6 +1,8 @@
 #include "noise.h"
+#include <stdio.h>
+#include <math.h>
 
-const static int p[512] = {
+static int p[512] = {
     151, 160, 137, 91,  90,  15,  131, 13,  201, 95,  96,  53,  194, 233, 7,
     225, 140, 36,  103, 30,  69,  142, 8,   99,  37,  240, 21,  10,  23,  190,
     6,   148, 247, 120, 234, 75,  0,   26,  197, 62,  94,  252, 219, 203, 117,
@@ -37,28 +39,38 @@ const static int p[512] = {
     93,  222, 114, 67,  29,  24,  72,  243, 141, 128, 195, 78,  66,  215, 61,
     156, 180};
 
-static double fade(double t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+static double fade(double t) {
+  return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
 
 static double lerp(double t, double a, double b) { return a + t * (b - a); }
 
 static double grad(int hash, double x, double y, double z) {
   int h = hash & 15;
-  double u = h < 8 ? x : y, v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+  double u = h < 8 ? x : y;
+  double v = h < 4 ? y : (h == 12 || h == 14 ? x : z);
   return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 }
 
-static int floor(double x) { return (int)x - (x <= 0); }
-
 double noise(double x, double y, double z) {
-  int X = floor(x) & 255;
-  int Y = floor(y) & 255;
-  int Z = floor(z) & 255;
+  int X = ((int)floor(x)) & 255;
+  int Y = ((int)floor(y)) & 255;
+  int Z = ((int)floor(z)) & 255;
   x -= floor(x);
   y -= floor(y);
   z -= floor(z);
-  double u = fade(x), v = fade(y), w = fade(z);
-  int A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z, B = p[X + 1] + Y,
-      BA = p[B] + Z, BB = p[B + 1] + Z;
+
+  double u = fade(x);
+  double v = fade(y);
+  double w = fade(z);
+
+  int A = p[X] + Y;
+  int AA = p[A] + Z;
+  int AB = p[A + 1] + Z;
+  int B = p[X + 1] + Y;
+  int BA = p[B] + Z;
+  int BB = p[B + 1] + Z;
+
   return lerp(
       w,
       lerp(v, lerp(u, grad(p[AA], x, y, z), grad(p[BA], x - 1, y, z)),

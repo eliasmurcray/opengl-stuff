@@ -1,11 +1,13 @@
 #version 330 core
 
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec4 FragColor;
 
-in vec2 v_TexCoord;
+in vec2 vTexCoords;
 
-uniform sampler2D u_Texture;
+uniform sampler2D uHeightmap;
 
 void main() {
-  color = texture(u_Texture, v_TexCoord);
+  float height = texture(uHeightmap, vTexCoords).r;
+  vec3 color = vec3(height);
+  FragColor = vec4(color, 1.0);
 }
