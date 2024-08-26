@@ -6,6 +6,7 @@
 
 #define WIDTH 640
 #define HEIGHT 480
+#define FREQUENCY 0.075
 
 int main() {
   if (!glfwInit()) return 1;
@@ -55,7 +56,7 @@ int main() {
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
   /* UV */
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)(2 * sizeof(float)));
 
   unsigned int ibo;
   glGenBuffers(1, &ibo);
@@ -78,7 +79,7 @@ int main() {
   for (; i < HEIGHT; i++) {
     size_t j = 0;
     for (; j < WIDTH; j++) {
-      double n = noise(j * 0.01, i * 0.01, 0);
+      double n = noise(j * FREQUENCY, i * FREQUENCY, 0);
       heightmap[i * WIDTH + j] = (n + 1.0f) / 2.0f;
     }
   }
