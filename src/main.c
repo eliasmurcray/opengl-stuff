@@ -6,7 +6,7 @@
 
 #define WIDTH 640
 #define HEIGHT 480
-#define FREQUENCY 0.075
+#define FREQUENCY 0.05
 
 int main() {
   if (!glfwInit()) return 1;
